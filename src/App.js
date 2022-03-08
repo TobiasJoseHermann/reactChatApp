@@ -43,6 +43,14 @@ export default function App() {
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/reactChatApp"
+                element={
+                  <PrivateRoute>
+                    <Home />
+                  </PrivateRoute>
+                }
+              />
               <Route path="/signUp" element={<SingUp />} />
               <Route path="/login" element={<Login />} />
               <Route path="/resetPassword" element={<ResetPassword />} />
