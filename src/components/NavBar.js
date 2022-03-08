@@ -39,7 +39,8 @@ export default function NavBar() {
     navigate("/")
   }
 
-  if (location.pathname === "/") return null
+  if (location.pathname === "/" || location.pathname === "/reactChatApp")
+    return null
 
   return (
     <Container sx={{ mb: 2 }}>

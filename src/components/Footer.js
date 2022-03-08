@@ -6,7 +6,12 @@ export default function Footer() {
   const navigate = useNavigate()
 
   const location = useLocation()
-  if (location.pathname === "/" || location.pathname === "/about") return null
+  if (
+    location.pathname === "/" ||
+    location.pathname === "/about" ||
+    location.pathname === "/reactChatApp"
+  )
+    return null
 
   return (
     <Container sx={{ display: "flex", justifyContent: "center", mt: 3, mb: 3 }}>
