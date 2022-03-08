@@ -9,7 +9,8 @@ export default function Footer() {
   if (
     location.pathname === "/" ||
     location.pathname === "/about" ||
-    location.pathname === "/reactChatApp"
+    location.pathname === "/reactChatApp" ||
+    location.pathname === "/reactChatApp/"
   )
     return null
 

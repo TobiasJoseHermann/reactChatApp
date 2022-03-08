@@ -39,7 +39,11 @@ export default function NavBar() {
     navigate("/")
   }
 
-  if (location.pathname === "/" || location.pathname === "/reactChatApp")
+  if (
+    location.pathname === "/" ||
+    location.pathname === "/reactChatApp" ||
+    location.pathname === "/reactChatApp/"
+  )
     return null
 
   return (
