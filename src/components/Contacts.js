@@ -10,12 +10,18 @@ import { doc, getDoc } from "firebase/firestore"
 import { useAuth } from "../contexts/AuthContext"
 import { db } from "../firebase"
 import AddContactDialog from "./AddContactDialog"
-import { ListItemButton, Checkbox } from "@mui/material"
-
-// TODO: add search bar
+import {
+  TextField,
+  Alert,
+  ListItemButton,
+  Checkbox,
+  Backdrop,
+  CircularProgress,
+} from "@mui/material"
+import { useQuery } from "react-query"
 
 export default function Contacts() {
-  const [contacts, setContacts] = React.useState([])
+  const [searchInput, setSearchInput] = React.useState("")
   const { currentUser } = useAuth()
 
   const [checked, setChecked] = React.useState([])
@@ -34,7 +40,6 @@ export default function Contacts() {
   }
 
   const [open, setOpen] = React.useState(false)
-  const [added, setAdded] = React.useState(false)
   const [openConversationDialog, setOpenConversationDialog] =
     React.useState(false)
 
@@ -42,25 +47,45 @@ export default function Contacts() {
     setOpen(true)
   }
 
-  function handleClose(wasAdded) {
-    wasAdded && setAdded(prevAdded => !prevAdded)
+  function handleClose() {
     setOpen(false)
   }
 
-  React.useEffect(() => {
-    async function fetchContacts() {
-      const res = await getDoc(doc(db, "users", currentUser.email))
-      const data = res.data().contacts
-      setContacts(data)
-      console.log("fetch")
+  const {
+    isLoading,
+    error,
+    refetch,
+    data: contacts,
+  } = useQuery("fetchContacts", async function () {
+    const res = await getDoc(doc(db, "users", "a@s.com"))
+    console.log("fetchContacs")
+    return res.data().contacts
+  })
+
+  if (isLoading) {
+    return (
+      <Backdrop
+        sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}
+        open
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    )
+  }
+
+  if (error) {
+    return <Alert severity="error">{error}</Alert>
+  }
+
+  const filteredContacts = contacts.filter(contact => {
+    if (searchInput === "") {
+      return contact
+    } else if (contact.toLowerCase().includes(searchInput.toLowerCase())) {
+      return contact
     }
-
-    fetchContacts()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [added])
-
-  const contactsElements = contacts.map(contact => {
+    return false
+  })
+  const contactsElements = filteredContacts.map(contact => {
     return (
       <div key={contact}>
         <ListItem
@@ -97,6 +122,11 @@ export default function Contacts() {
       >
         Add Conversation
       </Button>
+      <TextField
+        placeholder="search contacts..."
+        sx={{ mt: 1, mr: 1, ml: 1 }}
+        onChange={e => setSearchInput(e.target.value)}
+      />
       <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
         {contactsElements}
       </List>
@@ -105,6 +135,7 @@ export default function Contacts() {
         onClose={handleClose}
         handleClose={handleClose}
         currentUserEmail={currentUser.email}
+        refetch={refetch}
       />
       <AddConversationDialog
         open={openConversationDialog}
