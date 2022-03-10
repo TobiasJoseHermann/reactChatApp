@@ -14,6 +14,7 @@ import { QueryClient, QueryClientProvider, useQuery } from "react-query"
 import { ThemeProvider, createTheme } from "@mui/material/styles"
 import { CssBaseline } from "@mui/material"
 import ResetPassword from "./routes/ResetPassword"
+import { ReactQueryDevtools } from "react-query/devtools"
 import { useStoreState } from "easy-peasy"
 
 const queryClient = new QueryClient()
@@ -60,6 +61,7 @@ export default function App() {
             <Footer />
           </ThemeProvider>
         </AuthProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </BrowserRouter>
   )

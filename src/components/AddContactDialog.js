@@ -12,8 +12,7 @@ import { useRef } from "react"
 import { db } from "../firebase"
 
 export default function AddContactDialog({
-  onClose,
-  selectedValue,
+  refetch,
   open,
   handleClose,
   currentUserEmail,
@@ -25,11 +24,12 @@ export default function AddContactDialog({
     await updateDoc(doc(db, "users", currentUserEmail), {
       contacts: arrayUnion(emailRef.current.value),
     })
-    handleClose(true)
+    refetch()
+    handleClose()
   }
 
   return (
-    <Dialog onClose={() => handleClose(false)} open={open}>
+    <Dialog onClose={handleClose} open={open}>
       <DialogTitle>Add Contact</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -47,7 +47,7 @@ export default function AddContactDialog({
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleClose(false)}>Cancel</Button>
+        <Button onClick={handleClose}>Cancel</Button>
         <Button onClick={handleSubmit}>Add Contact</Button>
       </DialogActions>
     </Dialog>

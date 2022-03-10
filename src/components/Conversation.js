@@ -12,12 +12,22 @@ import { alpha, styled } from "@mui/material/styles"
 import { db } from "../firebase"
 import { getDoc, doc, updateDoc, arrayUnion } from "firebase/firestore"
 import Message from "../components/Message"
+import { QueryClient, useQueryClient } from "react-query"
 
 const drawerWidth = 360
 
 export default function Conversation({ conversationID, currentUser }) {
   const [messages, setMessages] = useState([])
   const textRef = useRef("")
+  const queryClient = useQueryClient()
+
+  // setMessages(() => {
+  //   const conversations = queryClient.getQueryData("fetchConversations")
+  //   for (let i = 0; i < conversations.length; i++) {
+  //     const conversation = conversations[i]
+  //     if (conversation.id === conversationID) return conversation.messages
+  //   }
+  // })
 
   useEffect(() => {
     // TODO: save messages in store and dont fetch again

@@ -8,39 +8,76 @@ import Avatar from "@mui/material/Avatar"
 import { getDocs, query, collection, where } from "firebase/firestore"
 import { useAuth } from "../contexts/AuthContext"
 import { db } from "../firebase"
-import { Typography, ListItemButton } from "@mui/material"
-
-// TODO: add search bar
+import {
+  TextField,
+  Alert,
+  Backdrop,
+  CircularProgress,
+  Typography,
+  ListItemButton,
+} from "@mui/material"
+import { useQuery } from "react-query"
 
 export default function Conversations({ conversationID, setConversationID }) {
-  const [conversations, setConversations] = React.useState([])
   const { currentUser } = useAuth()
+  const [searchInput, setSearchInput] = React.useState("")
 
-  React.useEffect(() => {
-    async function fetchConversations() {
-      const q = query(
-        collection(db, "conversations"),
-        where("participants", "array-contains", currentUser.email)
-      )
-      const res = await getDocs(q)
-      const data = res.docs.map(doc => {
-        return { ...doc.data(), id: doc.id }
-      })
-      console.log("fetch")
-      setConversations(data)
-    }
-
-    fetchConversations()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const conversationsElements = conversations.map(conversation => {
-    let participantsString = ""
-    const participants = conversation.participants
-    participants.forEach(participant => {
-      console.log(participant)
-      participantsString.concat(" ", participant)
+  const {
+    data: conversations,
+    error,
+    isLoading,
+  } = useQuery("fetchConversations", async function fetchConversations() {
+    const q = query(
+      collection(db, "conversations"),
+      where("participants", "array-contains", currentUser.email)
+    )
+    const res = await getDocs(q)
+    const data = res.docs.map(doc => {
+      return { ...doc.data(), id: doc.id }
     })
+    console.log("fetch conversations")
+    return data
+    // setConversations(data)
+  })
+
+  if (isLoading) {
+    return (
+      <Backdrop
+        sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}
+        open
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    )
+  }
+
+  if (error) {
+    return <Alert severity="error">{error}</Alert>
+  }
+
+  const filteredConversations = conversations.filter(conversation => {
+    if (searchInput === "") {
+      return conversation
+    } else if (
+      conversation.name.toLowerCase().includes(searchInput.toLowerCase())
+    ) {
+      return conversation
+    }
+    return false
+  })
+  const conversationsElements = filteredConversations.map(conversation => {
+    let participantsString = "Participants: "
+    const participants = conversation.participants
+    for (let i = 0; i < participants.length; i++) {
+      const participant = participants[i]
+
+      if (i > 2) {
+        participantsString += "..."
+        break
+      }
+
+      participantsString = participantsString.concat(participant, ", ")
+    }
 
     return (
       <div key={conversation.id}>
@@ -58,7 +95,6 @@ export default function Conversations({ conversationID, setConversationID }) {
                   ? conversation.name
                   : conversation.participants[0]
               }
-              // TODO: Fix
               secondary={<Typography>{participantsString}</Typography>}
             />
           </ListItemButton>
@@ -69,8 +105,15 @@ export default function Conversations({ conversationID, setConversationID }) {
   })
 
   return (
-    <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
-      {conversationsElements}
-    </List>
+    <>
+      <TextField
+        placeholder="search conversations..."
+        sx={{ mt: 1, mr: 1, ml: 1 }}
+        onChange={e => setSearchInput(e.target.value)}
+      />
+      <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
+        {conversationsElements}
+      </List>
+    </>
   )
 }
