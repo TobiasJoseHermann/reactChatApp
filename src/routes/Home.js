@@ -11,15 +11,21 @@ import {
   AppBar,
   Typography,
   Tab,
+  CircularProgress,
+  Backdrop,
   Tabs,
   Switch,
+  Alert,
   Button,
 } from "@mui/material"
 import { useAuth } from "../contexts/AuthContext"
 import { useStoreState, useStoreActions } from "easy-peasy"
 import Conversation from "../components/Conversation"
-import Chats from "../components/Conversations"
+import Conversations from "../components/Conversations"
 import { useNavigate } from "react-router-dom"
+import { useQuery } from "react-query"
+import { getDocs, query, collection, where } from "firebase/firestore"
+import { db } from "../firebase"
 
 const drawerWidth = 360
 
@@ -46,6 +52,50 @@ export default function Home() {
     } catch {
       setError("Failed to log out")
     }
+  }
+
+  const {
+    data: conversations,
+    error: fetchError,
+    isLoading,
+  } = useQuery("fetchConversations", async function fetchConversations() {
+    const q = query(
+      collection(db, "conversations"),
+      where("participants", "array-contains", currentUser.email)
+    )
+    const res = await getDocs(q)
+    const data = res.docs.map(doc => {
+      return { ...doc.data(), id: doc.id }
+    })
+    console.log("fetch conversations")
+    return data
+  })
+
+  if (isLoading) {
+    return (
+      <Backdrop
+        sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}
+        open
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    )
+  }
+
+  if (fetchError) {
+    return (
+      <Box>
+        <Alert severity="error">{fetchError.message}</Alert>
+      </Box>
+    )
+  }
+
+  if (error) {
+    return (
+      <Box>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    )
   }
 
   return (
@@ -93,7 +143,7 @@ export default function Home() {
         <Toolbar>
           <Avatar
             sx={{ ml: 1 }}
-            alt="Remy Sharp"
+            alt={currentUser.email}
             src="/static/images/avatar/1.jpg"
           />
           <Typography sx={{ ml: 2 }}>{currentUser.email}</Typography>
@@ -105,13 +155,14 @@ export default function Home() {
           aria-label="basic tabs example"
           variant="fullWidth"
         >
-          <Tab label="Chats" />
+          <Tab label="Conversations" />
           <Tab label="Contacts" />
         </Tabs>
         {selectedTab === 0 ? (
-          <Chats
+          <Conversations
             conversationID={conversationID}
             setConversationID={setConversationID}
+            conversations={conversations}
           />
         ) : (
           <Contacts
@@ -120,7 +171,11 @@ export default function Home() {
           />
         )}
       </Drawer>
-      <Conversation conversationID={conversationID} currentUser={currentUser} />
+      <Conversation
+        conversationID={conversationID}
+        conversations={conversations}
+        currentUser={currentUser}
+      />
     </Box>
   )
 }

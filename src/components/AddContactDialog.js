@@ -18,11 +18,14 @@ export default function AddContactDialog({
   currentUserEmail,
 }) {
   const emailRef = useRef("")
+  const nameRef = useRef("")
 
   async function handleSubmit() {
-    console.log(emailRef.current.value)
     await updateDoc(doc(db, "users", currentUserEmail), {
-      contacts: arrayUnion(emailRef.current.value),
+      contacts: arrayUnion({
+        email: emailRef.current.value,
+        name: nameRef.current.value,
+      }),
     })
     refetch()
     handleClose()
@@ -33,7 +36,8 @@ export default function AddContactDialog({
       <DialogTitle>Add Contact</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          To add a contact, please enter his email address
+          To add a contact, please enter his email address and the name of the
+          contact
         </DialogContentText>
         <TextField
           autoFocus
@@ -44,6 +48,16 @@ export default function AddContactDialog({
           fullWidth
           variant="standard"
           inputRef={emailRef}
+        />
+        <TextField
+          autoFocus
+          margin="dense"
+          id="name"
+          label="Contact name"
+          type="name"
+          fullWidth
+          variant="standard"
+          inputRef={nameRef}
         />
       </DialogContent>
       <DialogActions>

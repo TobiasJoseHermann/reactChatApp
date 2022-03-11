@@ -5,55 +5,20 @@ import Divider from "@mui/material/Divider"
 import ListItemText from "@mui/material/ListItemText"
 import ListItemAvatar from "@mui/material/ListItemAvatar"
 import Avatar from "@mui/material/Avatar"
-import { getDocs, query, collection, where } from "firebase/firestore"
 import { useAuth } from "../contexts/AuthContext"
-import { db } from "../firebase"
-import {
-  TextField,
-  Alert,
-  Backdrop,
-  CircularProgress,
-  Typography,
-  ListItemButton,
-} from "@mui/material"
-import { useQuery } from "react-query"
+import { TextField, Typography, ListItemButton } from "@mui/material"
+import userDefaultAvatar from "../images/userDefaultAvatar.png"
+import { useStoreActions } from "easy-peasy"
 
-export default function Conversations({ conversationID, setConversationID }) {
+// TODO: add delete contact and conversation
+
+export default function Conversations({
+  conversationID,
+  setConversationID,
+  conversations,
+}) {
   const { currentUser } = useAuth()
   const [searchInput, setSearchInput] = React.useState("")
-
-  const {
-    data: conversations,
-    error,
-    isLoading,
-  } = useQuery("fetchConversations", async function fetchConversations() {
-    const q = query(
-      collection(db, "conversations"),
-      where("participants", "array-contains", currentUser.email)
-    )
-    const res = await getDocs(q)
-    const data = res.docs.map(doc => {
-      return { ...doc.data(), id: doc.id }
-    })
-    console.log("fetch conversations")
-    return data
-    // setConversations(data)
-  })
-
-  if (isLoading) {
-    return (
-      <Backdrop
-        sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}
-        open
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    )
-  }
-
-  if (error) {
-    return <Alert severity="error">{error}</Alert>
-  }
 
   const filteredConversations = conversations.filter(conversation => {
     if (searchInput === "") {
@@ -87,7 +52,9 @@ export default function Conversations({ conversationID, setConversationID }) {
             selected={conversationID === conversation.id}
           >
             <ListItemAvatar>
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+              <Avatar src={conversation.avatar} alt={conversation.name}>
+                <Avatar src={userDefaultAvatar} />
+              </Avatar>
             </ListItemAvatar>
             <ListItemText
               primary={

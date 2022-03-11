@@ -10,34 +10,26 @@ import {
 import SendIcon from "@mui/icons-material/Send"
 import { alpha, styled } from "@mui/material/styles"
 import { db } from "../firebase"
-import { getDoc, doc, updateDoc, arrayUnion } from "firebase/firestore"
+import { doc, updateDoc, arrayUnion } from "firebase/firestore"
 import Message from "../components/Message"
-import { QueryClient, useQueryClient } from "react-query"
 
 const drawerWidth = 360
 
-export default function Conversation({ conversationID, currentUser }) {
+export default function Conversation({
+  conversationID,
+  currentUser,
+  conversations,
+}) {
   const [messages, setMessages] = useState([])
   const textRef = useRef("")
-  const queryClient = useQueryClient()
-
-  // setMessages(() => {
-  //   const conversations = queryClient.getQueryData("fetchConversations")
-  //   for (let i = 0; i < conversations.length; i++) {
-  //     const conversation = conversations[i]
-  //     if (conversation.id === conversationID) return conversation.messages
-  //   }
-  // })
 
   useEffect(() => {
-    // TODO: save messages in store and dont fetch again
-    async function fetchMessages() {
-      const res = await getDoc(doc(db, "conversations", conversationID))
-      setMessages(res.data().messages)
-      console.log("fetch")
+    for (let i = 0; i < conversations.length; i++) {
+      if (conversations[i].id === conversationID) {
+        setMessages(conversations[i].messages)
+        break
+      }
     }
-
-    conversationID && fetchMessages()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationID])
 

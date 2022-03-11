@@ -1,0 +1,5 @@
+Existen usuarios
+Existen amistades 
+Existen conversaciones {
+  me puedo unir a una convers
+}

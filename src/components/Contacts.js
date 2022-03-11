@@ -15,10 +15,13 @@ import {
   Alert,
   ListItemButton,
   Checkbox,
+  Avatar,
   Backdrop,
   CircularProgress,
+  ButtonGroup,
 } from "@mui/material"
 import { useQuery } from "react-query"
+import userDefaultAvatar from "../images/userDefaultAvatar.png"
 
 export default function Contacts() {
   const [searchInput, setSearchInput] = React.useState("")
@@ -57,7 +60,7 @@ export default function Contacts() {
     refetch,
     data: contacts,
   } = useQuery("fetchContacts", async function () {
-    const res = await getDoc(doc(db, "users", "a@s.com"))
+    const res = await getDoc(doc(db, "users", currentUser.email))
     console.log("fetchContacs")
     return res.data().contacts
   })
@@ -74,35 +77,37 @@ export default function Contacts() {
   }
 
   if (error) {
-    return <Alert severity="error">{error}</Alert>
+    return <Alert severity="error">{error.message}</Alert>
   }
 
   const filteredContacts = contacts.filter(contact => {
     if (searchInput === "") {
       return contact
-    } else if (contact.toLowerCase().includes(searchInput.toLowerCase())) {
+    } else if (contact.name.toLowerCase().includes(searchInput.toLowerCase())) {
       return contact
     }
     return false
   })
   const contactsElements = filteredContacts.map(contact => {
     return (
-      <div key={contact}>
+      <div key={contact.email}>
         <ListItem
           alignItems="flex-start"
           secondaryAction={
             <Checkbox
               edge="end"
-              onChange={handleToggle(contact)}
-              checked={checked.indexOf(contact) !== -1}
+              onChange={handleToggle(contact.email)}
+              checked={checked.indexOf(contact.email) !== -1}
             />
           }
         >
-          <ListItemButton onClick={() => setChecked([contact])}>
+          <ListItemButton onClick={() => setChecked([contact.email])}>
             <ListItemAvatar>
-              {/* <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" /> */}
+              <Avatar src={contact.avatar} alt={contact.name}>
+                <Avatar src={userDefaultAvatar} />
+              </Avatar>
             </ListItemAvatar>
-            <ListItemText primary={contact} />
+            <ListItemText primary={contact.name} secondary={contact.email} />
           </ListItemButton>
         </ListItem>
         <Divider variant="inset" component="li" />
@@ -112,16 +117,12 @@ export default function Contacts() {
 
   return (
     <>
-      <Button variant="outlined" onClick={handleClickOpen} sx={{ m: 1 }}>
-        Add Contact
-      </Button>
-      <Button
-        variant="outlined"
-        onClick={() => setOpenConversationDialog(true)}
-        sx={{ m: 1 }}
-      >
-        Add Conversation
-      </Button>
+      <ButtonGroup variant="contained" sx={{ m: 1, alignSelf: "center" }}>
+        <Button onClick={handleClickOpen}>Add Contact</Button>
+        <Button onClick={() => setOpenConversationDialog(true)}>
+          Add Conversation
+        </Button>
+      </ButtonGroup>
       <TextField
         placeholder="search contacts..."
         sx={{ mt: 1, mr: 1, ml: 1 }}

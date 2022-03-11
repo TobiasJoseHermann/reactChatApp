@@ -1,8 +1,10 @@
-import { Typography } from '@mui/material'
-import React from 'react'
+import { Container, Typography } from "@mui/material"
+import React from "react"
 
-export default function NotFoundPage () {
+export default function NotFoundPage() {
   return (
-    <Typography variant='h1'>Error 404 page not found</Typography>
+    <Container>
+      <Typography variant="h1">Error 404 page not found</Typography>
+    </Container>
   )
 }
