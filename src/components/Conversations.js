@@ -5,19 +5,16 @@ import Divider from "@mui/material/Divider"
 import ListItemText from "@mui/material/ListItemText"
 import ListItemAvatar from "@mui/material/ListItemAvatar"
 import Avatar from "@mui/material/Avatar"
-import { useAuth } from "../contexts/AuthContext"
 import { TextField, Typography, ListItemButton } from "@mui/material"
 import userDefaultAvatar from "../images/userDefaultAvatar.png"
-import { useStoreActions } from "easy-peasy"
 
-// TODO: add delete contact and conversation
+// TODO: add delete contact and leave conversation
 
 export default function Conversations({
   conversationID,
   setConversationID,
   conversations,
 }) {
-  const { currentUser } = useAuth()
   const [searchInput, setSearchInput] = React.useState("")
 
   const filteredConversations = conversations.filter(conversation => {
@@ -34,7 +31,7 @@ export default function Conversations({
     let participantsString = "Participants: "
     const participants = conversation.participants
     for (let i = 0; i < participants.length; i++) {
-      const participant = participants[i]
+      const participant = participants[i].name
 
       if (i > 2) {
         participantsString += "..."
@@ -43,6 +40,10 @@ export default function Conversations({
 
       participantsString = participantsString.concat(participant, ", ")
     }
+    participantsString = participantsString.substring(
+      0,
+      participantsString.length - 2
+    )
 
     return (
       <div key={conversation.id}>
@@ -75,7 +76,7 @@ export default function Conversations({
     <>
       <TextField
         placeholder="search conversations..."
-        sx={{ mt: 1, mr: 1, ml: 1 }}
+        sx={{ mt: 2, mr: 1, ml: 1 }}
         onChange={e => setSearchInput(e.target.value)}
       />
       <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>

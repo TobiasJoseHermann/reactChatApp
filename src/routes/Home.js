@@ -17,15 +17,24 @@ import {
   Switch,
   Alert,
   Button,
+  IconButton,
 } from "@mui/material"
 import { useAuth } from "../contexts/AuthContext"
 import { useStoreState, useStoreActions } from "easy-peasy"
 import Conversation from "../components/Conversation"
 import Conversations from "../components/Conversations"
 import { useNavigate } from "react-router-dom"
-import { useQuery } from "react-query"
-import { getDocs, query, collection, where } from "firebase/firestore"
+import { useQueries } from "react-query"
+import {
+  getDocs,
+  query,
+  collection,
+  where,
+  doc,
+  getDoc,
+} from "firebase/firestore"
 import { db } from "../firebase"
+import { Settings } from "@mui/icons-material"
 
 const drawerWidth = 360
 
@@ -54,22 +63,40 @@ export default function Home() {
     }
   }
 
-  const {
-    data: conversations,
-    error: fetchError,
-    isLoading,
-  } = useQuery("fetchConversations", async function fetchConversations() {
-    const q = query(
-      collection(db, "conversations"),
-      where("participants", "array-contains", currentUser.email)
-    )
-    const res = await getDocs(q)
-    const data = res.docs.map(doc => {
-      return { ...doc.data(), id: doc.id }
-    })
-    console.log("fetch conversations")
-    return data
-  })
+  const results = useQueries([
+    {
+      queryKey: "fetchContacts",
+      queryFn: async function () {
+        const res = await getDoc(doc(db, "users", currentUser.email))
+        console.log("fetch Contacs")
+        return res.data().contacts
+      },
+    },
+    {
+      queryKey: "fetchConversations",
+      queryFn: async function () {
+        const q = query(
+          collection(db, "conversations"),
+          where("participants", "array-contains", currentUser.email)
+        )
+        const res = await getDocs(q)
+        const data = res.docs.map(doc => {
+          return { ...doc.data(), id: doc.id }
+        })
+        console.log("fetch conversations")
+        return data
+      },
+    },
+  ])
+
+  const isLoading = results.some(result => result.isLoading)
+  let fetchError = ""
+  const setFetchError = err => (fetchError = err)
+  results.forEach(result => result.error && setFetchError(result.error))
+  const contacts = results[0].data
+  const conversations = results[1].data
+  const refetchContacts = results[0].refetch
+  const refetchConversations = results[1].refetch
 
   if (isLoading) {
     return (
@@ -98,10 +125,27 @@ export default function Home() {
     )
   }
 
+  const namedConversations = conversations.map(conversation => {
+    return {
+      ...conversation,
+      participants: conversation.participants.map(participant => {
+        let auxName = ""
+        if (participant === currentUser.email) auxName = "You"
+        else {
+          const index = contacts.findIndex(
+            contact => contact.email === participant
+          )
+          if (index === -1) auxName = participant
+          else auxName = contacts[index].name
+        }
+        return { email: participant, name: auxName }
+      }),
+    }
+  })
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-
       <AppBar
         position="fixed"
         sx={{
@@ -146,7 +190,12 @@ export default function Home() {
             alt={currentUser.email}
             src="/static/images/avatar/1.jpg"
           />
-          <Typography sx={{ ml: 2 }}>{currentUser.email}</Typography>
+          <Typography sx={{ ml: 2, flexGrow: 1 }}>
+            {currentUser.email}
+          </Typography>
+          <IconButton onClick={() => navigate("/settings")}>
+            <Settings />
+          </IconButton>
         </Toolbar>
         <Divider />
         <Tabs
@@ -162,18 +211,23 @@ export default function Home() {
           <Conversations
             conversationID={conversationID}
             setConversationID={setConversationID}
-            conversations={conversations}
+            conversations={namedConversations}
+            refetch={refetchConversations}
           />
         ) : (
           <Contacts
             selectedContact={selectedContact}
             changeSelectedContact={setSelectedContact}
+            refetchContacts={refetchContacts}
+            refetchConversations={refetchConversations}
+            contacts={contacts}
           />
         )}
       </Drawer>
       <Conversation
         conversationID={conversationID}
-        conversations={conversations}
+        conversations={namedConversations}
+        contacts={contacts}
         currentUser={currentUser}
       />
     </Box>

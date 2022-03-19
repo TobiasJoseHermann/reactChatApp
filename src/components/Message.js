@@ -1,7 +1,6 @@
 import React from "react"
 import { useTheme } from "@mui/material/styles"
-import { Card, Box, Typography } from "@mui/material"
-import { DoneAll } from "@mui/icons-material"
+import { Card, Typography } from "@mui/material"
 import { useAuth } from "../contexts/AuthContext"
 
 export default function Message({ message }) {
@@ -30,7 +29,7 @@ export default function Message({ message }) {
       }}
     >
       {!isFromUser && (
-        <Typography sx={{ fontSize: 14 }}>{message.from}</Typography>
+        <Typography sx={{ fontSize: 14 }}>{message.name}</Typography>
       )}
       <Typography variant="p" component="p" sx={{ mb: 0, fontSize: 16 }}>
         {message.text}

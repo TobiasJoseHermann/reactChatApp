@@ -6,24 +6,22 @@ import ListItemText from "@mui/material/ListItemText"
 import ListItemAvatar from "@mui/material/ListItemAvatar"
 import Button from "@mui/material/Button"
 import AddConversationDialog from "./AddConversationDialog"
-import { doc, getDoc } from "firebase/firestore"
 import { useAuth } from "../contexts/AuthContext"
-import { db } from "../firebase"
 import AddContactDialog from "./AddContactDialog"
 import {
   TextField,
-  Alert,
   ListItemButton,
   Checkbox,
   Avatar,
-  Backdrop,
-  CircularProgress,
   ButtonGroup,
 } from "@mui/material"
-import { useQuery } from "react-query"
 import userDefaultAvatar from "../images/userDefaultAvatar.png"
 
-export default function Contacts() {
+export default function Contacts({
+  contacts,
+  refetchContacts,
+  refetchConversations,
+}) {
   const [searchInput, setSearchInput] = React.useState("")
   const { currentUser } = useAuth()
 
@@ -52,32 +50,6 @@ export default function Contacts() {
 
   function handleClose() {
     setOpen(false)
-  }
-
-  const {
-    isLoading,
-    error,
-    refetch,
-    data: contacts,
-  } = useQuery("fetchContacts", async function () {
-    const res = await getDoc(doc(db, "users", currentUser.email))
-    console.log("fetchContacs")
-    return res.data().contacts
-  })
-
-  if (isLoading) {
-    return (
-      <Backdrop
-        sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}
-        open
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    )
-  }
-
-  if (error) {
-    return <Alert severity="error">{error.message}</Alert>
   }
 
   const filteredContacts = contacts.filter(contact => {
@@ -136,12 +108,13 @@ export default function Contacts() {
         onClose={handleClose}
         handleClose={handleClose}
         currentUserEmail={currentUser.email}
-        refetch={refetch}
+        refetch={refetchContacts}
       />
       <AddConversationDialog
         open={openConversationDialog}
         setOpenConversationDialog={setOpenConversationDialog}
         selectedContacts={[...checked, currentUser.email]}
+        refetch={refetchConversations}
       />
     </>
   )

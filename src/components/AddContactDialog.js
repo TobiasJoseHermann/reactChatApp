@@ -19,6 +19,7 @@ export default function AddContactDialog({
 }) {
   const emailRef = useRef("")
   const nameRef = useRef("")
+  // TODO: check if contact is already registered
 
   async function handleSubmit() {
     await updateDoc(doc(db, "users", currentUserEmail), {

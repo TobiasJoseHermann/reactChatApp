@@ -15,6 +15,7 @@ import { db } from "../firebase"
 export default function AddConversationDialog({
   open,
   selectedContacts,
+  refetch,
   setOpenConversationDialog,
 }) {
   const nameRef = useRef("")
@@ -29,6 +30,7 @@ export default function AddConversationDialog({
       participants: selectedContacts,
       messages: [],
     })
+    refetch()
   }
 
   const selectedContactsElements = selectedContacts.map(contact => (

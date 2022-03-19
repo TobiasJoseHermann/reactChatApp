@@ -16,6 +16,7 @@ import { CssBaseline } from "@mui/material"
 import ResetPassword from "./routes/ResetPassword"
 import { ReactQueryDevtools } from "react-query/devtools"
 import { useStoreState } from "easy-peasy"
+import Settings from "./routes/Settings"
 
 const queryClient = new QueryClient()
 
@@ -49,6 +50,14 @@ export default function App() {
                 element={
                   <PrivateRoute>
                     <Home />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <PrivateRoute>
+                    <Settings />
                   </PrivateRoute>
                 }
               />

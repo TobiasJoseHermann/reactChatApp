@@ -3,3 +3,5 @@ Existen amistades
 Existen conversaciones {
   me puedo unir a una convers
 }
+
+TODO: poner metodos sort

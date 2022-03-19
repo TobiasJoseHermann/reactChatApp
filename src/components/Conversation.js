@@ -19,6 +19,7 @@ export default function Conversation({
   conversationID,
   currentUser,
   conversations,
+  contacts,
 }) {
   const [messages, setMessages] = useState([])
   const textRef = useRef("")
@@ -26,12 +27,20 @@ export default function Conversation({
   useEffect(() => {
     for (let i = 0; i < conversations.length; i++) {
       if (conversations[i].id === conversationID) {
-        setMessages(conversations[i].messages)
+        const messages = conversations[i].messages.map(message => {
+          return {
+            ...message,
+            name: conversations[i].participants.find(
+              participant => participant.email === message.from
+            ).name,
+          }
+        })
+        setMessages(messages)
         break
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationID])
+  }, [conversationID, contacts])
 
   async function handleSumbit() {
     const message = {
